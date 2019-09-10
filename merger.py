@@ -13,8 +13,8 @@ class Window(tk.Tk):
         self.files = []
         self.output = pd.DataFrame()
 
-        self.wm_attributes('-alpha', 0.7)
-        self.img = tk.PhotoImage(file='background.gif')
+        self.img = tk.PhotoImage(file='assets/background.gif')
+
         self.w = self.img.width()
         self.h = self.img.height()
         self.label_background = tk.Label(image=self.img, width=800, height=1000)
@@ -25,7 +25,7 @@ class Window(tk.Tk):
         self.configure()
         self.title("Merge 0.0.1")
 
-        self.label = tk.Label(self, image=self.img, text="Excel File Merge Program", cursor='fleur')
+        self.label = tk.Label(self, text="Excel File Merge Program", cursor='fleur', bg='ghost white')
         self.label.place(relx=0.05, rely=0.05, relheight=0.05, relwidth=0.3)
 
         self.button_files = tk.Button(text="Select Files", bg='White', command=self.select_file)
@@ -48,6 +48,7 @@ class Window(tk.Tk):
         writer = pd.ExcelWriter(f, engine='xlsxwriter')
         self.output.to_excel(writer, sheet_name='RESULT')
         writer.save()
+        # TODO show completed window
         print("completed")
 
 
