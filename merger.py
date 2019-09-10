@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
 from tkinter import Listbox
 from utils import merge
 import pandas as pd
@@ -38,16 +39,24 @@ class Window(tk.Tk):
         self.listbox_list_of_files.place(relx=0.20, rely=0.3, relheight=0.3, relwidth=0.4)
 
     def select_file(self):
-        files_select = filedialog.askopenfilenames()
+        files_select = filedialog.askopenfilenames(filetypes=(("xlsx or xls files", "*.xls*"), ("xlsx or xls", ".xls*")))
         for file in files_select:
             self.listbox_list_of_files.insert(END, file)
 
     def merge_file(self):
         self.output = merge(self.listbox_list_of_files.get(0, END))
-        f = filedialog.asksaveasfilename(defaultextension='.xlsx')
-        writer = pd.ExcelWriter(f, engine='xlsxwriter')
-        self.output.to_excel(writer, sheet_name='RESULT')
-        writer.save()
+        f = filedialog.asksaveasfilename(defaultextension='.xlsx',
+                                         filetypes=(("xlsx files support", "*.xlsx"), ("xls files support", ".xls")))
+        if not f.split('/')[-1].endswith('.xlsx'):
+            messagebox.showerror("Hata Mesajı", "Sadece xlsx ve xls türündeki dosyalar")
+            return
+        try:
+            writer = pd.ExcelWriter(f, engine='xlsxwriter')
+            self.output.to_excel(writer, sheet_name='RESULT')
+            writer.save()
+        except Exception as e:
+            messagebox.showerror('Awww', 'Bir hata oluştu.')
+
         # TODO show completed window
         print("completed")
 
