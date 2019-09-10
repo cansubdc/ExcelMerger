@@ -10,6 +10,7 @@ class Window(tk.Tk):
     def __init__(self):
         # TODO https://stackoverflow.com/questions/19196130/select-all-in-a-tkinter-listbox
         super().__init__()
+        self.turn = 1
         self.files = []
         self.output = pd.DataFrame()
 
@@ -32,18 +33,37 @@ class Window(tk.Tk):
         self.button_files.place(relx=0.65, rely=0.4, relheight=0.1, relwidth=0.15)
 
         self.button_merge = tk.Button(text="Merge", width=200, pady=20, bg='White', command=self.merge_file)
-        self.button_merge.place(relx=0.1, rely=0.8, relheight=0.1, relwidth=0.8)
+        self.button_merge.place(relx=0.1, rely=0.8, relheight=0.13, relwidth=0.8)
 
         self.listbox_list_of_files = Listbox(listvariable=self.files)
         self.listbox_list_of_files.place(relx=0.20, rely=0.3, relheight=0.3, relwidth=0.4)
 
+        self.button_filepath = tk.Button(text="Show Full Path", bg='White', command=self.change_path_mode)
+        self.button_filepath.place(relx=0.3, rely=0.62, relheight=0.05, relwidth=0.20)
+
+    def change_path_mode(self):
+        self.button_filepath.config(text='Show Full Path' if self.turn else 'Hide Path')
+        self.listbox_list_of_files.delete(0, END)
+        if self.turn:
+            for file in self.files:
+                file = file.rsplit("/", 1)[1]
+                self.listbox_list_of_files.insert(END, file)
+        else:
+            for file in self.files:
+                self.listbox_list_of_files.insert(END, file)
+        self.turn = not self.turn
+
     def select_file(self):
         files_select = filedialog.askopenfilenames()
         for file in files_select:
+            self.files.append(file)
+            file = file.rsplit("/", 1)[1]
+            # items = self.listbox_list_of_files.curselection()
+            # print(items)
             self.listbox_list_of_files.insert(END, file)
 
     def merge_file(self):
-        self.output = merge(self.listbox_list_of_files.get(0, END))
+        self.output = merge(self.files)
         f = filedialog.asksaveasfilename(defaultextension='.xlsx')
         writer = pd.ExcelWriter(f, engine='xlsxwriter')
         self.output.to_excel(writer, sheet_name='RESULT')
