@@ -11,7 +11,7 @@ class Window(tk.Tk):
     def __init__(self):
         # TODO https://stackoverflow.com/questions/19196130/select-all-in-a-tkinter-listbox
         super().__init__()
-        self.turn = 1
+        self.turn = 0
         self.files = []
         self.output = pd.DataFrame()
 
@@ -55,30 +55,34 @@ class Window(tk.Tk):
         self.turn = not self.turn
 
     def select_file(self):
-        files_select = filedialog.askopenfilenames(filetypes=(("xlsx or xls files", "*.xls*"), ("xlsx or xls", ".xls*")))
+        try:
+            files_select = filedialog.askopenfilenames(
+                filetypes=[("Default Excel file", "*.xlsx"), ("Excel file 97-2003", "*.xls")])
+
+        except Exception as e:
+            messagebox.showerror('Awww', 'Unknown Error Occurred.')
+        except FileNotFoundError:
+            messagebox.showerror("Error Message", "File not found")
+
         for file in files_select:
             self.files.append(file)
             file = file.rsplit("/", 1)[1]
-            # items = self.listbox_list_of_files.curselection()
-            # print(items)
             self.listbox_list_of_files.insert(END, file)
 
     def merge_file(self):
-        self.output = merge(self.listbox_list_of_files.get(0, END))
+        self.output = merge(self.files)
         f = filedialog.asksaveasfilename(defaultextension='.xlsx',
-                                         filetypes=(("xlsx files support", "*.xlsx"), ("xls files support", ".xls")))
-        if not f.split('/')[-1].endswith('.xlsx'):
-            messagebox.showerror("Hata Mesajı", "Sadece xlsx ve xls türündeki dosyalar")
+                                         filetypes=[("Default Excel file", "*.xlsx"), ("Excel file 97-2003", "*.xls")])
+        if not f.split('/')[-1].endswith('.xlsx' or '.xls'):
+            messagebox.showerror("Error Message", "Only xlsx and xls File Types")
             return
         try:
             writer = pd.ExcelWriter(f, engine='xlsxwriter')
-            self.output.to_excel(writer, sheet_name='RESULT')
+            self.output.to_excel(writer)
             writer.save()
         except Exception as e:
-            messagebox.showerror('Awww', 'Bir hata oluştu.')
-
-        # TODO show completed window
-        print("completed")
+            messagebox.showerror('Awww', 'Unknown Error Occurred.')
+        self.listbox_list_of_files.insert(END, "Merge Completed to " + f.rsplit("/", 1)[1])
 
 
 if __name__ == '__main__':
