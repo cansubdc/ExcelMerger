@@ -88,7 +88,7 @@ class Window(tk.Tk):
                 writer.save()
                 self.listbox_list_of_files.delete(0, END)
                 messagebox.showinfo("", "File Merge Completed")
-                self.tk.call('wm', 'iconphoto', self._w, tk.PhotoImage(file='assets/icon2.gif'))
+                self.tk.call('wm', 'iconphoto', self._w, tk.PhotoImage(file='assets/successful_icon.gif'))
 
             except Exception as e:
                 print(e)
