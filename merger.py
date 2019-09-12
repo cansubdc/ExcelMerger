@@ -17,6 +17,7 @@ class Window(tk.Tk):
 
         self.img = tk.PhotoImage(file='assets/background.gif')
 
+
         self.w = self.img.width()
         self.h = self.img.height()
         self.label_background = tk.Label(image=self.img, width=800, height=1000)
@@ -25,10 +26,8 @@ class Window(tk.Tk):
         self.geometry('690x490+600+150')
         self.resizable(width=False, height=False)
         self.configure()
-        self.title("Merge 0.0.1")
 
-        self.label = tk.Label(self, text="Excel File Merge Program", cursor='fleur', bg='ghost white')
-        self.label.place(relx=0.05, rely=0.05, relheight=0.05, relwidth=0.3)
+        self.title("Excel File Merge Program")
 
         self.button_files = tk.Button(text="Select Files", bg='White', command=self.select_file)
         self.button_files.place(relx=0.65, rely=0.4, relheight=0.1, relwidth=0.15)
@@ -49,47 +48,51 @@ class Window(tk.Tk):
             for file in self.files:
                 file = file.rsplit("/", 1)[1]
                 self.listbox_list_of_files.insert(END, file)
-
-
         else:
             for file in self.files:
                 self.listbox_list_of_files.insert(END, file)
         self.turn = not self.turn
 
     def select_file(self):
+        files_select = None
         try:
-            files_select = filedialog.askopenfilenames(filetypes=[("Default Excel file", "*.xlsx"), ("Excel file 97-2003", "*.xls")])
-
+            files_select = filedialog.askopenfilenames(
+                filetypes=[("Default Excel file", "*.xlsx"), ("Excel file 97-2003", "*.xls")])
+            for file in files_select:
+                self.files.append(file)
+                file = file.rsplit("/", 1)[1]
+                self.listbox_list_of_files.insert(END, file)
         except FileNotFoundError:
             messagebox.showerror("Error Message", "File not found")
         except Exception as e:
             messagebox.showerror('Awww', 'Unknown Error Occurred.')
 
-        for file in files_select:
-            self.files.append(file)
-            file = file.rsplit("/", 1)[1]
-
-            self.listbox_list_of_files.insert(END, file)
-
     def merge_file(self):
         self.output = merge(self.files)
+        if self.output.empty:
+            messagebox.showerror("Error Message", "Column Values Is Different")
+            return
         if self.files.__len__() == 0:
             messagebox.showerror("Error Message", "You did not select source file")
         else:
             f = filedialog.asksaveasfilename(defaultextension='.xlsx',
-                                         filetypes=[("Default Excel file", "*.xlsx"), ("Excel file 97-2003", "*.xls")])
+                                             filetypes=[("Default Excel file", "*.xlsx"),
+                                                        ("Excel file 97-2003", "*.xls")])
 
             if not f.rsplit("/", 1)[1].endswith('.xlsx' or '.xls'):
                 messagebox.showerror("Error Message", "Only xlsx and xls File Types")
                 return
-            self.listbox_list_of_files.insert(END, "Your Selected Target Files " + f.rsplit("/", 1)[1])
             try:
                 writer = pd.ExcelWriter(f, engine='xlsxwriter')
                 self.output.to_excel(writer)
                 writer.save()
+                self.listbox_list_of_files.delete(0, END)
+                messagebox.showinfo("", "File Merge Completed")
+                self.tk.call('wm', 'iconphoto', self._w, tk.PhotoImage(file='assets/successful_icon.gif'))
+
             except Exception as e:
+                print(e)
                 messagebox.showerror('Awww', 'Unknown Error Occurred.')
-            self.listbox_list_of_files.insert(END, "Merge Completed to " + f.rsplit("/", 1)[1])
 
 
 if __name__ == '__main__':

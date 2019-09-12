@@ -8,9 +8,10 @@ def merge(files):
     tmp_data = pd.DataFrame()
     for file in files:
         df_file = pd.read_excel(file, index_col=0)
+        if not df_file.keys().equals(tmp_data.keys()) and not tmp_data.empty:
+            tmp_data.drop(tmp_data.index, inplace=True)
+            break
         tmp_data = pd.concat([tmp_data, df_file])
-
-    print(tmp_data)
     return tmp_data
 
 
